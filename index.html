@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动修炼</title>
+</head>
+
+<body>
+    <div style="width: 273px;height: 242px;margin:84px auto;" id="img"></div>
+    <div id="checkPage" style="margin: 10px;text-align: center;"">
+        验证码：<input id="code" style="margin-right: 20ox;" />
+        <button style="color: yellowgreen;" onclick="checkCode()">验证</button>
+    </div>
+    <div id="content" style="text-align: center;display: none;">
+        <p id="expirationDate"
+            style="width: 60%;float: left;margin: 0;font-size: 12px;color: rgb(127, 217, 245);text-align: left;"></p>
+        <button onclick="logout()" style="float: right;color: rgb(243, 126, 97);">退出登录</button>    
+        <button onclick="showRecord()" style="float: right;color: aquamarine;" id="record">查看记录</button>
+        <p style="font-size: 12px;color: rgb(127, 217, 245);text-align: left;float: left;">注：一个验证码只能对应一个账号</p>
+        <p style="float: left;margin-bottom: 0;">
+            <span style="display: inline-block;width: 80px;">账号：</span><input id="phone" /><br>
+        </p>
+        <p style="float: left;">
+            <span style="display: inline-block;width: 80px;">密码：</span><input id="password" type="password" /><br>
+        </p>
+        <div style="width: 70px;margin: 0 32%;">
+            <button style="color: goldenrod;" onclick="startXiulian()" id="start">开始修炼</button><br>
+            <button style="color: rgb(219, 86, 46);" onclick="stopXiulian()" id="stop">停止修炼</button><br>
+        </div>
+    </div>
+</body>
+<script>
+    window.onload = async function () {
+        let code = localStorage.getItem("code")
+        if (code != null) {
+            document.getElementById("checkPage").style.display = "none"
+            document.getElementById("img").style.display="none"
+            document.getElementById("content").style.display = "block"
+            const check = await fetch('https://15712yk550.qicp.vip/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code
+                })
+            });
+            const checkData = await check.json();
+            if (checkData.code == 200) {
+                let date = new Date(checkData.expirationDate).toLocaleString();
+                document.getElementById("expirationDate").innerHTML = "服务到期时间：" + date
+                isActive = checkData.isActive
+                removeMessage()
+                document.getElementById("phone").value = checkData.phone
+                document.getElementById("password").value = checkData.password
+                if (isActive) {
+                    document.getElementById("start").style.display = "none"
+                    document.getElementById("stop").style.display = "block"
+                } else {
+                    document.getElementById("start").style.display = "block"
+                    document.getElementById("stop").style.display = "none"
+                }
+            }
+        } else {
+            document.getElementById("checkPage").style.display = "block"
+            document.getElementById("img").style.display="block"
+            document.getElementById("content").style.display = "none"
+        }
+    }
+    let isActive = true
+    let flag = true
+    async function checkCode() {
+        let code = document.getElementById("code").value
+        const check = await fetch('https://15712yk550.qicp.vip/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                code
+            })
+        });
+        const checkData = await check.json();
+        if (checkData.code == 200) {
+            isActive = checkData.isActive
+            removeMessage()
+            localStorage.setItem("code", code)
+            document.getElementById("phone").value = checkData.phone
+            document.getElementById("password").value = checkData.password
+            document.getElementById("checkPage").style.display = "none"
+            document.getElementById("img").style.display="none"
+            document.getElementById("content").style.display = "block"
+            if (isActive) {
+                document.getElementById("start").style.display = "none"
+                document.getElementById("stop").style.display = "block"
+            } else {
+                document.getElementById("start").style.display = "block"
+                document.getElementById("stop").style.display = "none"
+            }
+        } else {
+            showMessage(checkData.message)
+        }
+    }
+    async function startXiulian() {
+        let phone = document.getElementById("phone").value
+        let password = document.getElementById("password").value
+        let code = localStorage.getItem("code")
+        if (phone == "" || password == "") {
+            showMessage("账号和密码不可为空")
+            return
+        }
+        const login = await fetch('https://15712yk550.qicp.vip/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                phone,
+                password,
+                code
+            })
+        });
+        const loginData = await login.json();
+        if (loginData.code == 200) {
+            removeMessage()
+            localStorage.setItem("phone", phone)
+            localStorage.setItem("password", password)
+            document.getElementById("start").style.display = "none"
+            document.getElementById("stop").style.display = "block"
+        }
+        showMessage(loginData.message)
+    }
+    async function stopXiulian() {
+        removeMessage()
+        let code = localStorage.getItem("code")
+        const stop = await fetch('https://15712yk550.qicp.vip/stopXiulian', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                code
+            })
+        });
+        const stopData = await stop.json();
+        if (stopData.code == 200) {
+            removeMessage()
+            document.getElementById("start").style.display = "block"
+            document.getElementById("stop").style.display = "none"
+        }
+        showMessage(stopData.message)
+    }
+    async function showRecord() {
+        flag = !flag
+        if (flag) {
+            removeMessage()
+            document.getElementById("record").innerHTML = "查看记录"
+            document.getElementById("record").style.color = "aquamarine"
+        } else {
+            let code = localStorage.getItem("code")
+            document.getElementById("record").innerHTML = "关闭记录"
+            document.getElementById("record").style.color = "rgb(219, 86, 46)"
+            const record = await fetch('https://15712yk550.qicp.vip/record', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code
+                })
+            });
+            const recordData = await record.json();
+            console.log(recordData)
+            if (recordData.code == 200) {
+                if (recordData.recordList.length == 0) {
+                    showMessage("暂无记录")
+                    return
+                }
+                let recordList = recordData.recordList.reverse()
+                recordData.recordList.forEach(item => {
+                    showMessage(item)
+                });
+            } else {
+                showMessage("获取记录失败")
+            }
+        }
+    }
+    function logout(){
+        removeMessage()
+        localStorage.removeItem("code")
+        localStorage.removeItem("phone")
+        localStorage.removeItem("password")
+        document.getElementById("checkPage").style.display = "block"
+        document.getElementById("img").style.display="block"
+        document.getElementById("content").style.display = "none"
+    }
+    function showMessage(message) {
+        // 创建一个新的元素
+        var myMessage = document.createElement("div");
+        myMessage.classList.add("message");
+        // 设置元素的内容
+        myMessage.textContent = message
+        myMessage.style.margin = "10px 20px"
+        myMessage.style.fontSize = "14px"
+        myMessage.style.color = "#5499f3"
+        // 将元素插入到页面中
+        document.body.appendChild(myMessage);
+    }
+    function removeMessage() {
+        document.querySelectorAll(".message").forEach(element => {
+            element.remove();
+        });
+    }
+</script>
+
+</html>
+<style>
+    body {
+        background-image: url("http://oss.liangsanyun.com/bg/login.jpg");
+        background-size: cover;
+    }
+    #img{
+        background-image: url("http://yuan.tanhukejicn.cc/static/img/image_9.2ad8f1af.png");
+        background-size: cover;
+    }
+</style>
