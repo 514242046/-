@@ -38,7 +38,7 @@
             document.getElementById("checkPage").style.display = "none"
             document.getElementById("img").style.display="none"
             document.getElementById("content").style.display = "block"
-            const check = await fetch('https://15712yk550.qicp.vip/check', {
+            const check = await fetch('http://43.138.66.124:4000/check', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -73,7 +73,7 @@
     let flag = true
     async function checkCode() {
         let code = document.getElementById("code").value
-        const check = await fetch('https://15712yk550.qicp.vip/check', {
+        const check = await fetch('http://43.138.66.124:4000/check', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -111,7 +111,7 @@
             showMessage("账号和密码不可为空")
             return
         }
-        const login = await fetch('https://15712yk550.qicp.vip/login', {
+        const login = await fetch('http://43.138.66.124:4000/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -135,7 +135,7 @@
     async function stopXiulian() {
         removeMessage()
         let code = localStorage.getItem("code")
-        const stop = await fetch('https://15712yk550.qicp.vip/stopXiulian', {
+        const stop = await fetch('http://43.138.66.124:4000/stopXiulian', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -162,7 +162,7 @@
             let code = localStorage.getItem("code")
             document.getElementById("record").innerHTML = "关闭记录"
             document.getElementById("record").style.color = "rgb(219, 86, 46)"
-            const record = await fetch('https://15712yk550.qicp.vip/record', {
+            const record = await fetch('http://43.138.66.124:4000/record', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -218,11 +218,11 @@
 </html>
 <style>
     body {
-        background-image: url("http://oss.liangsanyun.com/bg/login.jpg");
+        background-image: url("./login.jpg");
         background-size: cover;
     }
     #img{
-        background-image: url("http://yuan.tanhukejicn.cc/static/img/image_9.2ad8f1af.png");
+        background-image: url("./img.png");
         background-size: cover;
     }
 </style>
